@@ -63,6 +63,24 @@ class WeakMapTest extends TestCase
         $weakMap[$a];
     }
 
+    public function testAccessingObjectWithReusedIdThrowsError() : void
+    {
+        $weakMap = new WeakMap();
+
+        $k = new stdClass;
+        $v = new stdClass;
+
+        $weakMap[$k] = $v;
+
+        unset($k);
+        unset($v);
+
+        $a = new stdClass;
+
+        self::expectException(Error::class);
+        $weakMap[$a];
+    }
+
     public function testCount() : void
     {
         $weakMap = new WeakMap();
