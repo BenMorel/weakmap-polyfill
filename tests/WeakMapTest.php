@@ -155,6 +155,30 @@ class WeakMapTest extends TestCase
         self::assertNull($r->get());
     }
 
+    public function testTraversable() : void
+    {
+        $weakMap = new WeakMap();
+
+        $a = new stdClass;
+        $b = new stdClass;
+        $c = new stdClass;
+
+        $weakMap[$a] = 1;
+        $weakMap[$b] = 2;
+        $weakMap[$c] = 3;
+
+        self::assertSame([[$a, 1], [$b, 2], [$c, 3]], $this->iteratorToKeyValuePairs($weakMap));
+
+        unset($b);
+        self::assertSame([[$a, 1], [$c, 3]], $this->iteratorToKeyValuePairs($weakMap));
+
+        unset($a);
+        self::assertSame([[$c, 3]], $this->iteratorToKeyValuePairs($weakMap));
+
+        unset($c);
+        self::assertSame([], $this->iteratorToKeyValuePairs($weakMap));
+    }
+
     public function testHousekeeping() : void
     {
         if (version_compare(PHP_VERSION, '8') >= 0) {
@@ -180,5 +204,20 @@ class WeakMapTest extends TestCase
         }
 
         self::assertNull($r->get());
+    }
+
+    /**
+     * Similar to iterator_to_array(), but returns the result as a list of key-value pairs.
+     * We need this, as iterator_to_array() on a WeakMap would fail because keys are objects.
+     */
+    private function iteratorToKeyValuePairs(iterable $iterator) : array
+    {
+        $result = [];
+
+        foreach ($iterator as $key => $value) {
+            $result[] = [$key, $value];
+        }
+
+        return $result;
     }
 }

@@ -17,7 +17,7 @@ if (! class_exists('WeakMap')) {
      * This is a reasonable trade-off between performance and memory usage, but keep in mind that the polyfill will
      * always be slower, and consume more memory, than the native implementation.
      */
-    final class WeakMap implements ArrayAccess, Countable
+    final class WeakMap implements ArrayAccess, Countable, IteratorAggregate
     {
         /**
          * The number of offsetX() calls after which housekeeping will be performed.
@@ -124,6 +124,23 @@ if (! class_exists('WeakMap')) {
             $this->counter = 0;
 
             return $count;
+        }
+
+        public function getIterator() : Traversable
+        {
+            foreach ($this->weakRefs as $id => $weakRef) {
+                $object = $weakRef->get();
+
+                if ($object !== null) {
+                    yield $object => $this->values[$id];
+                } else {
+                    // This entry belongs to a destroyed object.
+                    unset(
+                        $this->weakRefs[$id],
+                        $this->values[$id]
+                    );
+                }
+            }
         }
 
         private function housekeeping() : void
