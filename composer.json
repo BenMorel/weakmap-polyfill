@@ -1,0 +1,24 @@
+{
+  "name": "benmorel/weakmap-polyfill",
+  "description": "A WeakMap polyfill for PHP 7.4",
+  "type": "library",
+  "keywords": [
+    "WeakMap",
+    "WeakRef",
+    "WeakReference"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "8.*",
+    "php-coveralls/php-coveralls": "2.*"
+  },
+  "autoload": {
+    "classmap": ["src/"]
+  },
+  "autoload-dev": {
+    "classmap": ["tests/"]
+  }
+}
