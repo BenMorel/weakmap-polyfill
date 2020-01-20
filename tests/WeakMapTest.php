@@ -136,4 +136,27 @@ class WeakMapTest extends TestCase
         self::assertSame(0, $weakMap->count());
         self::assertNull($r->get());
     }
+
+    public function testHousekeeping() : void
+    {
+        $weakMap = new WeakMap();
+
+        $k = new stdClass;
+        $v = new stdClass;
+        $r = WeakReference::create($v);
+
+        $unknownObject = new stdClass;
+
+        $weakMap[$k] = $v;
+
+        unset($k);
+        unset($v);
+
+        for ($i = 0; $i < 99; $i++) {
+            self::assertNotNull($r->get());
+            isset($weakMap[$unknownObject]);
+        }
+
+        self::assertNull($r->get());
+    }
 }
