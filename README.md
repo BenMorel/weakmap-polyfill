@@ -69,7 +69,7 @@ echo $weakMap[$b]; // Error
 
 echo count($weakMap); // 1
 
-// removing the last reference to the object key will remove it from the WeakMap
+// removing the last reference to the object will remove it from the WeakMap
 unset($a);
 
 echo count($weakMap); // 0
