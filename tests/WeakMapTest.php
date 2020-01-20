@@ -139,6 +139,10 @@ class WeakMapTest extends TestCase
 
     public function testHousekeeping() : void
     {
+        if (version_compare(PHP_VERSION, '8') >= 0) {
+            self::markTestSkipped("This test is internal to the polyfill, and will fail with PHP 8's WeakMap");
+        }
+
         $weakMap = new WeakMap();
 
         $k = new stdClass;
