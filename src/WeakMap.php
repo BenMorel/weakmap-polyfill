@@ -108,7 +108,7 @@ if (! class_exists('WeakMap')) {
 
         public function count() : int
         {
-            $this->doHouseKeeping();
+            $this->housekeeping(true);
 
             return count($this->weakRefs);
         }
@@ -130,22 +130,18 @@ if (! class_exists('WeakMap')) {
             }
         }
 
-        private function housekeeping() : void
+        private function housekeeping(bool $force = false) : void
         {
-            if (++$this->counter === self::HOUSEKEEPING_EVERY) {
-                $this->doHouseKeeping();
-            }
-        }
-
-        private function doHouseKeeping() : void
-        {
-            foreach ($this->weakRefs as $id => $weakRef) {
-                if ($weakRef->get() === null) {
-                    unset(
-                        $this->weakRefs[$id],
-                        $this->values[$id]
-                    );
+            if ($force || (++$this->counter === self::HOUSEKEEPING_EVERY)) {
+                foreach ($this->weakRefs as $id => $weakRef) {
+                    if ($weakRef->get() === null) {
+                        unset(
+                            $this->weakRefs[$id],
+                            $this->values[$id]
+                        );
+                    }
                 }
+
                 $this->counter = 0;
             }
         }
