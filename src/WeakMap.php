@@ -45,6 +45,7 @@ if (! class_exists('WeakMap')) {
         public function offsetExists($object) : bool
         {
             $this->housekeeping();
+            $this->assertValidKey($object);
 
             $id = spl_object_id($object);
 
@@ -66,6 +67,7 @@ if (! class_exists('WeakMap')) {
         public function offsetGet($object)
         {
             $this->housekeeping();
+            $this->assertValidKey($object);
 
             $id = spl_object_id($object);
 
@@ -87,6 +89,7 @@ if (! class_exists('WeakMap')) {
         public function offsetSet($object, $value) : void
         {
             $this->housekeeping();
+            $this->assertValidKey($object);
 
             $id = spl_object_id($object);
 
@@ -97,6 +100,7 @@ if (! class_exists('WeakMap')) {
         public function offsetUnset($object) : void
         {
             $this->housekeeping();
+            $this->assertValidKey($object);
 
             $id = spl_object_id($object);
 
@@ -145,6 +149,17 @@ if (! class_exists('WeakMap')) {
                 }
 
                 $this->housekeepingCounter = 0;
+            }
+        }
+
+        private function assertValidKey($key) : void
+        {
+            if ($key === null) {
+                throw new Error('Cannot append to WeakMap');
+            }
+
+            if(!is_object($key)) {
+                throw new TypeError('WeakMap key must be an object');
             }
         }
     }

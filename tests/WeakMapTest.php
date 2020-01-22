@@ -206,6 +206,60 @@ class WeakMapTest extends TestCase
         self::assertNull($r->get());
     }
 
+    public function testKeyMustBeObjectToSet() : void
+    {
+        $weakMap = new WeakMap();
+
+        self::expectException(TypeError::class);
+        self::expectExceptionMessage('WeakMap key must be an object');
+        $weakMap[1] = 2;
+    }
+
+    public function testKeyMustBeObjectToGet() : void
+    {
+        $weakMap = new WeakMap();
+
+        self::expectException(TypeError::class);
+        self::expectExceptionMessage('WeakMap key must be an object');
+        $weakMap[1];
+    }
+
+    public function testKeyMustBeObjectToIsset() : void
+    {
+        $weakMap = new WeakMap();
+
+        self::expectException(TypeError::class);
+        self::expectExceptionMessage('WeakMap key must be an object');
+        isset($weakMap[1]);
+    }
+
+    public function testKeyMustBeObjectToUnset() : void
+    {
+        $weakMap = new WeakMap();
+
+        self::expectException(TypeError::class);
+        self::expectExceptionMessage('WeakMap key must be an object');
+        unset($weakMap[1]);
+    }
+
+    public function testCantAppend() : void
+    {
+        $weakMap = new WeakMap();
+
+        self::expectException(Error::class);
+        self::expectExceptionMessage('Cannot append to WeakMap');
+        $weakMap[] = 1;
+    }
+
+    public function testCantDeepAppend() : void
+    {
+        $weakMap = new WeakMap();
+
+        self::expectException(Error::class);
+        self::expectExceptionMessage('Cannot append to WeakMap');
+        $weakMap[][1] = 1;
+    }
+
     /**
      * Similar to iterator_to_array(), but returns the result as a list of key-value pairs.
      * We need this, as iterator_to_array() on a WeakMap would fail because keys are objects.
