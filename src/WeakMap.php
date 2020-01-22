@@ -128,6 +128,8 @@ if (! class_exists('WeakMap')) {
                     );
                 }
             }
+
+            $this->housekeepingCounter = 0;
         }
 
         private function housekeeping(bool $force = false) : void
