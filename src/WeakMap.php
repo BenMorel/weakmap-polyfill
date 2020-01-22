@@ -26,6 +26,11 @@ if (! class_exists('WeakMap')) {
         private const HOUSEKEEPING_EVERY = 100;
 
         /**
+         * The number of offsetX() calls since the last housekeeping.
+         */
+        private int $housekeepingCounter = 0;
+
+        /**
          * A map of spl_object_id to WeakReference objects. This must be kept in sync with $values.
          *
          * @var WeakReference[]
@@ -36,11 +41,6 @@ if (! class_exists('WeakMap')) {
          * A map of spl_object_id to values. This must be kept in sync with $weakRefs.
          */
         private array $values = [];
-
-        /**
-         * The number of offsetX() calls since the last housekeeping.
-         */
-        private int $counter = 0;
 
         public function offsetExists($object) : bool
         {
@@ -132,7 +132,7 @@ if (! class_exists('WeakMap')) {
 
         private function housekeeping(bool $force = false) : void
         {
-            if ($force || (++$this->counter === self::HOUSEKEEPING_EVERY)) {
+            if ($force || (++$this->housekeepingCounter === self::HOUSEKEEPING_EVERY)) {
                 foreach ($this->weakRefs as $id => $weakRef) {
                     if ($weakRef->get() === null) {
                         unset(
@@ -142,7 +142,7 @@ if (! class_exists('WeakMap')) {
                     }
                 }
 
-                $this->counter = 0;
+                $this->housekeepingCounter = 0;
             }
         }
     }
