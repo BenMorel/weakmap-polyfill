@@ -108,22 +108,9 @@ if (! class_exists('WeakMap')) {
 
         public function count() : int
         {
-            $count = 0;
+            $this->doHouseKeeping();
 
-            foreach ($this->weakRefs as $id => $weakRef) {
-                if ($weakRef->get() !== null) {
-                    $count++;
-                } else {
-                    unset(
-                        $this->weakRefs[$id],
-                        $this->values[$id]
-                    );
-                }
-            }
-
-            $this->counter = 0;
-
-            return $count;
+            return count($this->weakRefs);
         }
 
         public function getIterator() : Traversable
@@ -146,15 +133,19 @@ if (! class_exists('WeakMap')) {
         private function housekeeping() : void
         {
             if (++$this->counter === self::HOUSEKEEPING_EVERY) {
-                foreach ($this->weakRefs as $id => $weakRef) {
-                    if ($weakRef->get() === null) {
-                        unset(
-                            $this->weakRefs[$id],
-                            $this->values[$id]
-                        );
-                    }
-                }
+                $this->doHouseKeeping();
+            }
+        }
 
+        private function doHouseKeeping() : void
+        {
+            foreach ($this->weakRefs as $id => $weakRef) {
+                if ($weakRef->get() === null) {
+                    unset(
+                        $this->weakRefs[$id],
+                        $this->values[$id]
+                    );
+                }
                 $this->counter = 0;
             }
         }
