@@ -30,7 +30,8 @@ The RFC author, Nikita Popov, highlights why a userland `WeakMap` is suboptimal:
 This is the trade-off this library offers: a 100% compatible implementation, but:
 
 - slower
-- whose values are not removed as soon as the object key is destroyed, but when you use the `WeakMap` again
+- whose values are not removed as soon as the object key is destroyed, but when you use the `WeakMap` again; note that
+  this affects when object destructors are called as well
 
 Here is how it works:
 
