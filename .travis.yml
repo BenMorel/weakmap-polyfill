@@ -3,11 +3,7 @@ os: linux
 
 php:
   - 7.4
-  - nightly # testing on PHP 8 with an actual WeakMap ensures that our tests are valid
-
-jobs:
-  allow_failures:
-    - php: nightly
+  - 8.0snapshot # testing on PHP 8 with an actual WeakMap ensures that our tests are valid
 
 before_script:
   - composer install --ignore-platform-reqs
