@@ -2,7 +2,7 @@
 
 This polyfill aims to be 100% compatible with upcoming `WeakMap` in PHP 8.
 
-[![Build Status](https://secure.travis-ci.org/BenMorel/weakmap-polyfill.svg?branch=master)](http://travis-ci.org/BenMorel/weakmap-polyfill)
+[![Build Status](https://travis-ci.com/BenMorel/weakmap-polyfill.svg?branch=master)](https://travis-ci.com/BenMorel/weakmap-polyfill)
 [![Coverage Status](https://coveralls.io/repos/github/BenMorel/weakmap-polyfill/badge.svg?branch=master)](https://coveralls.io/github/BenMorel/weakmap-polyfill?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/benmorel/weakmap-polyfill/v/stable)](https://packagist.org/packages/benmorel/weakmap-polyfill)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
