@@ -3,7 +3,7 @@ os: linux
 
 php:
   - 7.4
-  - 8.0snapshot # testing on PHP 8 with an actual WeakMap ensures that our tests are valid
+  - 8.0 # testing on PHP 8 with an actual WeakMap ensures that our tests are valid
 
 before_script:
   - composer install
