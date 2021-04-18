@@ -9,7 +9,7 @@ This polyfill aims to be 100% compatible with `WeakMap` in PHP 8.
 
 ## Introduction
 
-PHP 7.4 introduced `WeakReference`, but didn't include a `WeakMap` implementation. [This has been implemented](https://wiki.php.net/rfc/weak_maps) since, but will only be available in PHP 8.
+PHP 7.4 introduced `WeakReference`, but didn't include a `WeakMap` implementation. [This has been implemented](https://wiki.php.net/rfc/weak_maps) since, but is only available in PHP 8.
 
 The RFC author, Nikita Popov, highlights why a userland `WeakMap` is suboptimal:
 
