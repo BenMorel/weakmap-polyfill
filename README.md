@@ -14,9 +14,9 @@ PHP 7.4 introduced `WeakReference`, but didn't include a `WeakMap` implementatio
 The RFC author, Nikita Popov, highlights why a userland `WeakMap` is suboptimal:
 
 > Weak maps require first-class language support and cannot be implemented using existing functionality provided by PHP.
-> 
+>
 > At first sight, it may seem that an array mapping from spl_object_id() to arbitrary values could serve the purpose of a weak map. This is not the case for multiple reasons:
-> 
+>
 > - spl_object_id() values are reused after the object is destroyed. Two different objects can have the same object ID – just not at the same time.
 > - The object ID cannot be converted back into an object, so iteration over the map is not possible.
 > - The value stored under the ID will not be released when the object is destroyed.
@@ -24,7 +24,7 @@ The RFC author, Nikita Popov, highlights why a userland `WeakMap` is suboptimal:
 > Using the WeakReference class introduced in PHP 7.4, it is possible to avoid the first two issues (…). However, this does not solve the third problem:
 > The data will not be released when the object is destroyed. It will only be released on the next access with an object that has the same reused ID,
 > or if a garbage collection mechanism, which performs regular sweeps of the whole map, is implemented.
-> 
+>
 > A native weak map implementation will instead remove the value from the weak map as soon as the object key is destroyed.
 
 This is the trade-off this library offers: a 100% compatible implementation, but:
@@ -36,7 +36,7 @@ This is the trade-off this library offers: a 100% compatible implementation, but
 Here is how it works:
 
 - calls to `count()` will always garbage collect dangling references immediately
-- using array-like features: set, get, `isset()`, `unset()` will perform garbage collection every 100 operations
+- using array-like features: set, get, `isset()`, `unset()` will perform garbage collection at least every 100 operations (less often for large WeakMaps).
 
 This offers a reasonable trade-off between performance and memory usage.
 
