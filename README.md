@@ -76,7 +76,7 @@ unset($a);
 echo count($weakMap); // 0
 ```
 
-# Alternatives
+## Alternatives
 
 The [`weakreference_bc` PECL](https://pecl.php.net/package/weakreference_bc) backports a native polyfill for WeakReference and WeakMap to PHP 7.0-7.4.
 The PECL has the following advantages:
