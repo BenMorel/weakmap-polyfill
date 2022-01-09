@@ -147,6 +147,18 @@ if (! class_exists('WeakMap')) {
             $this->housekeepingCounter = 0;
         }
 
+        // NOTE: The native WeakMap does not implement this method,
+        // but does throw Error for setting dynamic properties.
+        public function __set($name, $value): void {
+            throw new Error("Cannot create dynamic property WeakMap::\$$name");
+        }
+
+        // NOTE: The native WeakMap does not implement this method,
+        // but does forbid serialization.
+        public function __serialize(): void {
+            throw new Exception("Serialization of 'WeakMap' is not allowed");
+        }
+
         private function housekeeping(bool $force = false) : void
         {
             if ($force || (++$this->housekeepingCounter >= self::HOUSEKEEPING_EVERY &&

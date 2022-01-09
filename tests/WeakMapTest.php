@@ -260,6 +260,22 @@ class WeakMapTest extends TestCase
         $weakMap[][1] = 1;
     }
 
+    public function testCantSetDynamicProperty() : void
+    {
+        $weakMap = new WeakMap();
+        self::expectException(Error::class);
+        self::expectExceptionMessage('Cannot create dynamic property WeakMap::$abc');
+        $weakMap->abc = 123;
+    }
+
+    public function testCantSerialize() : void
+    {
+        $weakMap = new WeakMap();
+        self::expectException(Exception::class);
+        self::expectExceptionMessage("Serialization of 'WeakMap' is not allowed");
+        serialize($weakMap);
+    }
+
     /**
      * Similar to iterator_to_array(), but returns the result as a list of key-value pairs.
      * We need this, as iterator_to_array() on a WeakMap would fail because keys are objects.
