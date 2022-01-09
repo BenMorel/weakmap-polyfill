@@ -36,7 +36,7 @@ This is the trade-off this library offers: a 100% compatible implementation, but
 Here is how it works:
 
 - calls to `count()` will always garbage collect dangling references immediately
-- using array-like features: set, get, `isset()`, `unset()` will perform garbage collection every 100 operations
+- using array-like features: set, get, `isset()`, `unset()` will perform garbage collection at least every 100 operations (less often for large WeakMaps).
 
 This offers a reasonable trade-off between performance and memory usage.
 

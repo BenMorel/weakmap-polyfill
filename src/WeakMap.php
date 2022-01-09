@@ -12,7 +12,8 @@ if (! class_exists('WeakMap')) {
      * destroyed. With the polyfill, the memory is reclaimed only when new operations are performed on the WeakMap:
      *
      * - count() will reclaim memory immediately
-     * - offsetX() methods will reclaim memory every 100 calls
+     * - offsetX() methods will reclaim memory at least every 100 calls
+     *   (for large WeakMaps, this will increase to be proportional to the size of the WeakMap)
      *
      * This is a reasonable trade-off between performance and memory usage, but keep in mind that the polyfill will
      * always be slower, and consume more memory, than the native implementation.
@@ -20,10 +21,20 @@ if (! class_exists('WeakMap')) {
     final class WeakMap implements ArrayAccess, Countable, IteratorAggregate
     {
         /**
-         * The number of offsetX() calls after which housekeeping will be performed.
+         * The minimum number of offsetX() calls after which housekeeping will be performed.
          * Housekeeping consists in freeing memory associated with destroyed objects.
          */
         private const HOUSEKEEPING_EVERY = 100;
+
+        /**
+         * Only perform housekeeping when housekeepingCounter >= count(weakRefs) / HOUSEKEEPING_THRESHOLD.
+         *
+         * For example, for a WeakMap currently having 500 elements, this would housekeep after at least 50 elements,
+         * and would instead wait for HOUSEKEEPING_EVERY(100).
+         *
+         * For a WeakMap with 100,000 elements, this would instead housekeep after every 10,000 operations.
+         */
+        private const HOUSEKEEPING_THRESHOLD = 10;
 
         /**
          * The number of offsetX() calls since the last housekeeping.
@@ -138,7 +149,8 @@ if (! class_exists('WeakMap')) {
 
         private function housekeeping(bool $force = false) : void
         {
-            if ($force || (++$this->housekeepingCounter === self::HOUSEKEEPING_EVERY)) {
+            if ($force || (++$this->housekeepingCounter >= self::HOUSEKEEPING_EVERY &&
+                           $this->housekeepingCounter * self::HOUSEKEEPING_THRESHOLD >= count($this->weakRefs))) {
                 foreach ($this->weakRefs as $id => $weakRef) {
                     if ($weakRef->get() === null) {
                         unset(
