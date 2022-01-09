@@ -12,7 +12,7 @@ if (! class_exists('WeakMap')) {
      * destroyed. With the polyfill, the memory is reclaimed only when new operations are performed on the WeakMap:
      *
      * - count() will reclaim memory immediately
-     * - offsetX() methods will reclaim memory at least every 100 calls
+     * - offset*() methods will reclaim memory at least every 100 calls
      *   (for large WeakMaps, this will increase to be proportional to the size of the WeakMap)
      *
      * This is a reasonable trade-off between performance and memory usage, but keep in mind that the polyfill will
@@ -21,7 +21,7 @@ if (! class_exists('WeakMap')) {
     final class WeakMap implements ArrayAccess, Countable, IteratorAggregate
     {
         /**
-         * The minimum number of offsetX() calls after which housekeeping will be performed.
+         * The minimum number of offset*() calls after which housekeeping will be performed.
          * Housekeeping consists in freeing memory associated with destroyed objects.
          */
         private const HOUSEKEEPING_EVERY = 100;
@@ -37,7 +37,7 @@ if (! class_exists('WeakMap')) {
         private const HOUSEKEEPING_THRESHOLD = 10;
 
         /**
-         * The number of offsetX() calls since the last housekeeping.
+         * The number of offset*() calls since the last housekeeping.
          */
         private int $housekeepingCounter = 0;
 
