@@ -62,7 +62,7 @@ if (! class_exists('WeakMap')) {
 
             if (isset($this->weakRefs[$id])) {
                 if ($this->weakRefs[$id]->get() !== null) {
-                    return true;
+                    return isset($this->values[$id]);
                 }
 
                 // This entry belongs to a destroyed object.

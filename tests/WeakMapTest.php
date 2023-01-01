@@ -30,6 +30,17 @@ class WeakMapTest extends TestCase
         self::assertFalse(isset($weakMap[$b]));
     }
 
+    public function testArrayAccessWithNull() : void
+    {
+        $weakMap = new WeakMap();
+
+        $a = new stdClass;
+
+        $weakMap[$a] = null;
+        self::assertFalse(isset($weakMap[$a]));
+        self::assertNull($weakMap[$a]);
+    }
+
     public function testReusedObjectId() : void
     {
         $weakMap = new WeakMap();
