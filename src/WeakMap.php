@@ -161,8 +161,13 @@ if (! class_exists('WeakMap')) {
 
         private function housekeeping(bool $force = false) : void
         {
-            if ($force || (++$this->housekeepingCounter >= self::HOUSEKEEPING_EVERY &&
-                           $this->housekeepingCounter * self::HOUSEKEEPING_THRESHOLD >= count($this->weakRefs))) {
+            if (
+                $force
+                || (
+                    ++$this->housekeepingCounter >= self::HOUSEKEEPING_EVERY
+                    && $this->housekeepingCounter * self::HOUSEKEEPING_THRESHOLD >= count($this->weakRefs)
+                )
+            ) {
                 foreach ($this->weakRefs as $id => $weakRef) {
                     if ($weakRef->get() === null) {
                         unset(
