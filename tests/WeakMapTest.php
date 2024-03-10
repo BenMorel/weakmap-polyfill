@@ -192,7 +192,7 @@ class WeakMapTest extends TestCase
 
     public function testHousekeeping() : void
     {
-        if (version_compare(PHP_VERSION, '8') >= 0) {
+        if (\PHP_MAJOR_VERSION >= 8) {
             self::markTestSkipped("This test is internal to the polyfill, and will fail with PHP 8's WeakMap");
         }
 
@@ -215,6 +215,48 @@ class WeakMapTest extends TestCase
         }
 
         self::assertNull($r->get());
+    }
+
+    public function testHousekeepingOnGcRun() : void
+    {
+        $weakMap = new WeakMap();
+
+        $k = new stdClass;
+        $v = new stdClass;
+        $r = WeakReference::create($v);
+
+        $weakMap[$k] = $v;
+
+        unset($k);
+        unset($v);
+
+        if (\PHP_MAJOR_VERSION < 8) {
+            self::assertNotNull($r->get());
+            gc_collect_cycles();
+        }
+
+        self::assertNull($r->get());
+    }
+
+    public function testNoInternalCycle() : void
+    {
+        $weakMap = new WeakMap();
+        $rWeakMap = WeakReference::create($weakMap);
+
+        $k = new stdClass;
+        $v = new stdClass;
+        $rK = WeakReference::create($k);
+        $rV = WeakReference::create($v);
+
+        $weakMap[$k] = $v;
+
+        unset($weakMap);
+        unset($k);
+        unset($v);
+
+        self::assertNull($rWeakMap->get());
+        self::assertNull($rK->get());
+        self::assertNull($rV->get());
     }
 
     public function testKeyMustBeObjectToSet() : void

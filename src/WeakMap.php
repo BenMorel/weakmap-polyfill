@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Brick\WeakmapPolyfill\CycleWithDestructor;
+
 if (\PHP_MAJOR_VERSION === 7) {
     /**
      * A polyfill for the upcoming WeakMap implementation in PHP 8, based on WeakReference in PHP 7.4.
@@ -36,6 +38,9 @@ if (\PHP_MAJOR_VERSION === 7) {
          */
         private const HOUSEKEEPING_THRESHOLD = 10;
 
+        /** Workaround https://github.com/php/php-src/issues/13612. */
+        private \stdClass $destructedEarly;
+
         /**
          * The number of offset*() calls since the last housekeeping.
          */
@@ -52,6 +57,12 @@ if (\PHP_MAJOR_VERSION === 7) {
          * A map of spl_object_id to values. This must be kept in sync with $weakRefs.
          */
         private array $values = [];
+
+
+        public function __construct()
+        {
+            $this->setupHousekeepingOnGcRun();
+        }
 
         public function offsetExists($object) : bool
         {
@@ -190,6 +201,42 @@ if (\PHP_MAJOR_VERSION === 7) {
             if(!is_object($key)) {
                 throw new TypeError('WeakMap key must be an object');
             }
+        }
+
+        private function setupHousekeepingOnGcRun() : void
+        {
+            $this->destructedEarly = new \stdClass();
+
+            $weakThis = \WeakReference::create($this); // allow self to be released without GC
+            $weakThisDestructedEarly = \WeakReference::create($this->destructedEarly);
+
+            $gcRuns = 0;
+            $setupDestructorFx = static function () use ($weakThis, $weakThisDestructedEarly, &$gcRuns, &$setupDestructorFx): void {
+                $destructorFx = static function () use ($weakThis, $weakThisDestructedEarly, &$gcRuns, &$setupDestructorFx): void {
+                    $gcRunsPrev = $gcRuns;
+                    $gcRuns = gc_status()['runs'];
+                    if ($gcRunsPrev !== $gcRuns) { // prevent recursion on shutdown
+                        $setupDestructorFx();
+                    }
+
+                    if ($weakThisDestructedEarly->get() === null) {
+                        return;
+                    }
+
+                    $map = $weakThis->get();
+                    if ($map !== null) {
+                        \Closure::bind(static fn () => $map->performHousekeepingOnGcRun(), null, \WeakMap::class)();
+                    }
+                };
+
+                new CycleWithDestructor($destructorFx);
+            };
+            $setupDestructorFx();
+        }
+
+        private function performHousekeepingOnGcRun() : void
+        {
+            $this->housekeeping(true);
         }
     }
 }
