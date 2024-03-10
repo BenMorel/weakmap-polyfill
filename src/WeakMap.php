@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-if (! class_exists('WeakMap')) {
+if (\PHP_MAJOR_VERSION === 7) {
     /**
      * A polyfill for the upcoming WeakMap implementation in PHP 8, based on WeakReference in PHP 7.4.
      * The polyfill aims to be 100% compatible with the native WeakMap implementation, feature-wise.
