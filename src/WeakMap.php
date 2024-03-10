@@ -203,6 +203,9 @@ if (\PHP_MAJOR_VERSION === 7) {
             }
         }
 
+        /**
+         * @see Based on https://github.com/php/php-src/pull/13650 PHP GC behaviour.
+         */
         private function setupHousekeepingOnGcRun() : void
         {
             $this->destructedEarly = new \stdClass();
