@@ -88,7 +88,6 @@ if (\PHP_MAJOR_VERSION === 7) {
 
         public function offsetGet($object)
         {
-            $this->housekeeping();
             $this->assertValidKey($object);
 
             $id = spl_object_id($object);
