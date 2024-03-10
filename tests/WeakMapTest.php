@@ -217,9 +217,11 @@ class WeakMapTest extends TestCase
         self::assertNull($r->get());
     }
 
-    public function testHousekeepingOnGcRun() : void
+    public function testHousekeepingOnGcRun(?WeakMap $weakMap = null) : void
     {
-        $weakMap = new WeakMap();
+        if ($weakMap === null) {
+            $weakMap = new WeakMap();
+        }
 
         $k = new stdClass;
         $v = new stdClass;
@@ -257,6 +259,34 @@ class WeakMapTest extends TestCase
         self::assertNull($rWeakMap->get());
         self::assertNull($rK->get());
         self::assertNull($rV->get());
+    }
+
+    public function testHousekeepingOnGcRunSurvival() : void
+    {
+        $weakMap = new WeakMap();
+
+        $vkPairs = [];
+        for ($i = 100; $i > 0; $i--) {
+            for ($j = 100; $j > 0; $j--) {
+                $k = new stdClass;
+                $v = new stdClass;
+                $weakMap[$k] = $v;
+                $vkPairs[] = [$k, $v];
+            }
+
+            gc_collect_cycles();
+            gc_collect_cycles();
+            gc_collect_cycles();
+        }
+
+        foreach ($vkPairs as [$k, $v]) {
+            if ($weakMap[$k] !== $v) {
+                self::assertSame($v, $weakMap[$k]);
+            }
+        }
+        self::assertSame(count($vkPairs), count($weakMap));
+
+        $this->testHousekeepingOnGcRun($weakMap);
     }
 
     public function testKeyMustBeObjectToSet() : void
