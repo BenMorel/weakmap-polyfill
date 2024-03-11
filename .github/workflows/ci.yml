@@ -12,10 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         php-version:
           - "7.4"
           - "8.0" # testing on PHP 8 with an actual WeakMap ensures that our tests are valid
+          - "8.1"
+          - "8.2"
+          - "8.3"
 
     steps:
       - name: Checkout
