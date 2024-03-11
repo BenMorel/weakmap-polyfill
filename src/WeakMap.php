@@ -86,6 +86,7 @@ if (\PHP_MAJOR_VERSION === 7) {
             return false;
         }
 
+        #[\ReturnTypeWillChange]
         public function offsetGet($object)
         {
             $this->assertValidKey($object);
@@ -165,7 +166,7 @@ if (\PHP_MAJOR_VERSION === 7) {
 
         // NOTE: The native WeakMap does not implement this method,
         // but does forbid serialization.
-        public function __serialize(): void {
+        public function __serialize(): array {
             throw new Exception("Serialization of 'WeakMap' is not allowed");
         }
 
