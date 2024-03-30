@@ -38,8 +38,10 @@ if (\PHP_MAJOR_VERSION === 7) {
          */
         private const HOUSEKEEPING_THRESHOLD = 10;
 
-        /** Workaround https://github.com/php/php-src/issues/13612. */
-        private \stdClass $destructedEarly;
+        /**
+         * @var array<int, \WeakReference<static>>
+         */
+        private static ?array $housekeepingInstances = null;
 
         /**
          * The number of offset*() calls since the last housekeeping.
@@ -61,6 +63,11 @@ if (\PHP_MAJOR_VERSION === 7) {
         public function __construct()
         {
             $this->setupHousekeepingOnGcRun();
+        }
+
+        public function __destruct()
+        {
+            unset(self::$housekeepingInstances[spl_object_id($this)]);
         }
 
         public function offsetExists($object) : bool
@@ -206,33 +213,32 @@ if (\PHP_MAJOR_VERSION === 7) {
          */
         private function setupHousekeepingOnGcRun() : void
         {
-            $this->destructedEarly = new \stdClass();
+            if (self::$housekeepingInstances === null) {
+                self::$housekeepingInstances = [];
 
-            $weakThis = \WeakReference::create($this); // allow self to be released without GC
-            $weakThisDestructedEarly = \WeakReference::create($this->destructedEarly);
+                $gcRuns = 0;
+                $setupDestructorFx = static function () use (&$gcRuns, &$setupDestructorFx): void {
+                    $destructorFx = static function () use (&$gcRuns, &$setupDestructorFx): void {
+                        $gcRunsPrev = $gcRuns;
+                        $gcRuns = gc_status()['runs'];
+                        if ($gcRunsPrev !== $gcRuns) { // prevent recursion on shutdown
+                            $setupDestructorFx();
+                        }
 
-            $gcRuns = 0;
-            $setupDestructorFx = static function () use ($weakThis, $weakThisDestructedEarly, &$gcRuns, &$setupDestructorFx): void {
-                $destructorFx = static function () use ($weakThis, $weakThisDestructedEarly, &$gcRuns, &$setupDestructorFx): void {
-                    $gcRunsPrev = $gcRuns;
-                    $gcRuns = gc_status()['runs'];
-                    if ($gcRunsPrev !== $gcRuns) { // prevent recursion on shutdown
-                        $setupDestructorFx();
-                    }
+                        foreach (self::$housekeepingInstances as $v) {
+                            $map = $v->get();
+                            if ($map !== null) {
+                                $map->performHousekeepingOnGcRun();
+                            }
+                        }
+                    };
 
-                    if ($weakThisDestructedEarly->get() === null) {
-                        return;
-                    }
-
-                    $map = $weakThis->get();
-                    if ($map !== null) {
-                        $map->performHousekeepingOnGcRun();
-                    }
+                    new CycleWithDestructor($destructorFx);
                 };
+                $setupDestructorFx();
+            }
 
-                new CycleWithDestructor($destructorFx);
-            };
-            $setupDestructorFx();
+            self::$housekeepingInstances[spl_object_id($this)] = \WeakReference::create($this);
         }
 
         private function performHousekeepingOnGcRun() : void
