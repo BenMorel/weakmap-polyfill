@@ -228,7 +228,7 @@ if (\PHP_MAJOR_VERSION === 7) {
 
                     $map = $weakThis->get();
                     if ($map !== null) {
-                        \Closure::bind(static fn () => $map->performHousekeepingOnGcRun(), null, \WeakMap::class)();
+                        $map->performHousekeepingOnGcRun();
                     }
                 };
 
