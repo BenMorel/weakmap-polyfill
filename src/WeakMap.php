@@ -86,7 +86,6 @@ if (\PHP_MAJOR_VERSION === 7) {
             return false;
         }
 
-        #[\ReturnTypeWillChange]
         public function offsetGet($object)
         {
             $this->assertValidKey($object);
