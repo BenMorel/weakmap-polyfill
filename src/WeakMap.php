@@ -58,7 +58,6 @@ if (\PHP_MAJOR_VERSION === 7) {
          */
         private array $values = [];
 
-
         public function __construct()
         {
             $this->setupHousekeepingOnGcRun();
