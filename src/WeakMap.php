@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Brick\WeakmapPolyfill\CycleWithDestructor;
+use WeakmapPolyfill\CycleWithDestructor;
 
 if (\PHP_MAJOR_VERSION === 7) {
     /**

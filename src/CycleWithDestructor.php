@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Brick\WeakmapPolyfill;
+namespace WeakmapPolyfill;
 
 if (\PHP_MAJOR_VERSION === 7) {
     final class CycleWithDestructor
