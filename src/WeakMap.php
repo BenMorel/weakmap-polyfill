@@ -39,9 +39,11 @@ if (\PHP_MAJOR_VERSION === 7) {
         private const HOUSEKEEPING_THRESHOLD = 10;
 
         /**
-         * @var array<int, \WeakReference<static>>|null
+         * @var array<int, \WeakReference<static>>
          */
-        private static ?array $housekeepingInstances = null;
+        private static array $housekeepingInstances = [];
+
+        private static bool $destructorFxSetUp = false;
 
         /**
          * The number of offset*() calls since the last housekeeping.
@@ -214,8 +216,8 @@ if (\PHP_MAJOR_VERSION === 7) {
          */
         private function setupHousekeepingOnGcRun() : void
         {
-            if (self::$housekeepingInstances === null) {
-                self::$housekeepingInstances = [];
+            if (!self::$destructorFxSetUp) {
+                self::$destructorFxSetUp = true;
 
                 $gcRuns = 0;
                 $setupDestructorFx = static function () use (&$gcRuns, &$setupDestructorFx): void {
