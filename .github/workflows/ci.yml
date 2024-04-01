@@ -47,3 +47,24 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ matrix.php-version == '7.4' }}
+
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v2
+        with:
+          working-directory: tools/phpstan
+
+      - name: Run PHPStan
+        run: tools/phpstan/vendor/bin/phpstan analyze -c tools/phpstan/phpstan.neon
