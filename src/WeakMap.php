@@ -39,7 +39,7 @@ if (\PHP_MAJOR_VERSION === 7) {
         private const HOUSEKEEPING_THRESHOLD = 10;
 
         /**
-         * @var array<int, \WeakReference<static>>
+         * @var array<int, \WeakReference<static>>|null
          */
         private static ?array $housekeepingInstances = null;
 
