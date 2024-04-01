@@ -192,10 +192,6 @@ class WeakMapTest extends TestCase
 
     public function testHousekeeping() : void
     {
-        if (version_compare(PHP_VERSION, '8') >= 0) {
-            self::markTestSkipped("This test is internal to the polyfill, and will fail with PHP 8's WeakMap");
-        }
-
         $weakMap = new WeakMap();
 
         $k = new stdClass;
@@ -209,12 +205,86 @@ class WeakMapTest extends TestCase
         unset($k);
         unset($v);
 
-        for ($i = 0; $i < 99; $i++) {
-            self::assertNotNull($r->get());
-            isset($weakMap[$unknownObject]);
+        if (\PHP_MAJOR_VERSION < 8) {
+            for ($i = 0; $i < 99; $i++) {
+                self::assertNotNull($r->get());
+                isset($weakMap[$unknownObject]);
+            }
         }
 
         self::assertNull($r->get());
+    }
+
+    public function testHousekeepingOnGcRun(?WeakMap $weakMap = null) : void
+    {
+        if ($weakMap === null) {
+            $weakMap = new WeakMap();
+        }
+
+        $k = new stdClass;
+        $v = new stdClass;
+        $r = WeakReference::create($v);
+
+        $weakMap[$k] = $v;
+
+        unset($k);
+        unset($v);
+
+        if (\PHP_MAJOR_VERSION < 8) {
+            self::assertNotNull($r->get());
+            gc_collect_cycles();
+        }
+
+        self::assertNull($r->get());
+    }
+
+    public function testNoInternalCycle() : void
+    {
+        $weakMap = new WeakMap();
+        $rWeakMap = WeakReference::create($weakMap);
+
+        $k = new stdClass;
+        $v = new stdClass;
+        $rK = WeakReference::create($k);
+        $rV = WeakReference::create($v);
+
+        $weakMap[$k] = $v;
+
+        unset($weakMap);
+        unset($k);
+        unset($v);
+
+        self::assertNull($rWeakMap->get());
+        self::assertNull($rK->get());
+        self::assertNull($rV->get());
+    }
+
+    public function testHousekeepingOnGcRunSurvival() : void
+    {
+        $weakMap = new WeakMap();
+
+        $vkPairs = [];
+        for ($i = 100; $i > 0; $i--) {
+            for ($j = 100; $j > 0; $j--) {
+                $k = new stdClass;
+                $v = new stdClass;
+                $weakMap[$k] = $v;
+                $vkPairs[] = [$k, $v];
+            }
+
+            gc_collect_cycles();
+            gc_collect_cycles();
+            gc_collect_cycles();
+        }
+
+        foreach ($vkPairs as [$k, $v]) {
+            if ($weakMap[$k] !== $v) {
+                self::assertSame($v, $weakMap[$k]);
+            }
+        }
+        self::assertSame(count($vkPairs), count($weakMap));
+
+        $this->testHousekeepingOnGcRun($weakMap);
     }
 
     public function testKeyMustBeObjectToSet() : void

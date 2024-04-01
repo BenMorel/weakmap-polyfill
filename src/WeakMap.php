@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-if (! class_exists('WeakMap')) {
+use WeakmapPolyfill\CycleWithDestructor;
+
+if (\PHP_MAJOR_VERSION === 7) {
     /**
      * A polyfill for the upcoming WeakMap implementation in PHP 8, based on WeakReference in PHP 7.4.
      * The polyfill aims to be 100% compatible with the native WeakMap implementation, feature-wise.
@@ -37,6 +39,11 @@ if (! class_exists('WeakMap')) {
         private const HOUSEKEEPING_THRESHOLD = 10;
 
         /**
+         * @var array<int, \WeakReference<static>>|null
+         */
+        private static ?array $housekeepingInstances = null;
+
+        /**
          * The number of offset*() calls since the last housekeeping.
          */
         private int $housekeepingCounter = 0;
@@ -52,6 +59,16 @@ if (! class_exists('WeakMap')) {
          * A map of spl_object_id to values. This must be kept in sync with $weakRefs.
          */
         private array $values = [];
+
+        public function __construct()
+        {
+            $this->setupHousekeepingOnGcRun();
+        }
+
+        public function __destruct()
+        {
+            unset(self::$housekeepingInstances[spl_object_id($this)]);
+        }
 
         public function offsetExists($object) : bool
         {
@@ -155,7 +172,7 @@ if (! class_exists('WeakMap')) {
 
         // NOTE: The native WeakMap does not implement this method,
         // but does forbid serialization.
-        public function __serialize(): void {
+        public function __serialize(): array {
             throw new Exception("Serialization of 'WeakMap' is not allowed");
         }
 
@@ -190,6 +207,39 @@ if (! class_exists('WeakMap')) {
             if(!is_object($key)) {
                 throw new TypeError('WeakMap key must be an object');
             }
+        }
+
+        /**
+         * @see Based on https://github.com/php/php-src/pull/13650 PHP GC behaviour.
+         */
+        private function setupHousekeepingOnGcRun() : void
+        {
+            if (self::$housekeepingInstances === null) {
+                self::$housekeepingInstances = [];
+
+                $gcRuns = 0;
+                $setupDestructorFx = static function () use (&$gcRuns, &$setupDestructorFx): void {
+                    $destructorFx = static function () use (&$gcRuns, &$setupDestructorFx): void {
+                        $gcRunsPrev = $gcRuns;
+                        $gcRuns = gc_status()['runs'];
+                        if ($gcRunsPrev !== $gcRuns) { // prevent recursion on shutdown
+                            $setupDestructorFx();
+                        }
+
+                        foreach (self::$housekeepingInstances as $v) {
+                            $map = $v->get();
+                            if ($map !== null) {
+                                $map->housekeeping(true);
+                            }
+                        }
+                    };
+
+                    new CycleWithDestructor($destructorFx);
+                };
+                $setupDestructorFx();
+            }
+
+            self::$housekeepingInstances[spl_object_id($this)] = \WeakReference::create($this);
         }
     }
 }
