@@ -19,6 +19,12 @@ if (\PHP_MAJOR_VERSION === 7) {
      *
      * This is a reasonable trade-off between performance and memory usage, but keep in mind that the polyfill will
      * always be slower, and consume more memory, than the native implementation.
+     *
+     * @template TKey of object
+     * @template TValue
+     *
+     * @implements ArrayAccess<TKey, TValue>
+     * @implements IteratorAggregate<TKey, TValue>
      */
     final class WeakMap implements ArrayAccess, Countable, IteratorAggregate
     {
@@ -39,7 +45,7 @@ if (\PHP_MAJOR_VERSION === 7) {
         private const HOUSEKEEPING_THRESHOLD = 10;
 
         /**
-         * @var array<int, \WeakReference<static>>
+         * @var array<int, \WeakReference<WeakMap<object, mixed>>>
          */
         private static array $housekeepingInstances = [];
 
@@ -53,12 +59,14 @@ if (\PHP_MAJOR_VERSION === 7) {
         /**
          * A map of spl_object_id to WeakReference objects. This must be kept in sync with $values.
          *
-         * @var WeakReference[]
+         * @var array<int, WeakReference<TKey>>
          */
         private array $weakRefs = [];
 
         /**
          * A map of spl_object_id to values. This must be kept in sync with $weakRefs.
+         *
+         * @var array<int, TValue>
          */
         private array $values = [];
 
@@ -72,6 +80,9 @@ if (\PHP_MAJOR_VERSION === 7) {
             unset(self::$housekeepingInstances[spl_object_id($this)]);
         }
 
+        /**
+         * @param TKey $object
+         */
         public function offsetExists($object) : bool
         {
             $this->housekeeping();
@@ -94,6 +105,11 @@ if (\PHP_MAJOR_VERSION === 7) {
             return false;
         }
 
+        /**
+         * @param TKey $object
+         *
+         * @return TValue
+         */
         public function offsetGet($object)
         {
             $this->housekeeping();
@@ -116,6 +132,10 @@ if (\PHP_MAJOR_VERSION === 7) {
             throw new Error(sprintf('Object %s#%d not contained in WeakMap', get_class($object), $id));
         }
 
+        /**
+         * @param TKey $object
+         * @param TValue $value
+         */
         public function offsetSet($object, $value) : void
         {
             $this->housekeeping();
@@ -127,6 +147,9 @@ if (\PHP_MAJOR_VERSION === 7) {
             $this->values[$id]   = $value;
         }
 
+        /**
+         * @param TKey $object
+         */
         public function offsetUnset($object) : void
         {
             $this->housekeeping();
@@ -166,9 +189,13 @@ if (\PHP_MAJOR_VERSION === 7) {
             $this->housekeepingCounter = 0;
         }
 
-        // NOTE: The native WeakMap does not implement this method,
-        // but does throw Error for setting dynamic properties.
-        public function __set($name, $value): void {
+        /**
+         * NOTE: The native WeakMap does not implement this method,
+         * but does throw Error for setting dynamic properties.
+         *
+         * @param mixed $value
+         */
+        public function __set(string $name, $value): void {
             throw new Error("Cannot create dynamic property WeakMap::\$$name");
         }
 
@@ -200,6 +227,9 @@ if (\PHP_MAJOR_VERSION === 7) {
             }
         }
 
+        /**
+         * @param mixed $key
+         */
         private function assertValidKey($key) : void
         {
             if ($key === null) {
