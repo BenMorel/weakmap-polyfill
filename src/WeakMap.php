@@ -229,7 +229,7 @@ if (\PHP_MAJOR_VERSION === 7) {
                         foreach (self::$housekeepingInstances as $v) {
                             $map = $v->get();
                             if ($map !== null) {
-                                $map->performHousekeepingOnGcRun();
+                                $map->housekeeping(true);
                             }
                         }
                     };
@@ -240,11 +240,6 @@ if (\PHP_MAJOR_VERSION === 7) {
             }
 
             self::$housekeepingInstances[spl_object_id($this)] = \WeakReference::create($this);
-        }
-
-        private function performHousekeepingOnGcRun() : void
-        {
-            $this->housekeeping(true);
         }
     }
 }
