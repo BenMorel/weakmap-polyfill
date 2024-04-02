@@ -38,6 +38,7 @@ Here is how it works:
 
 - calls to `count()` will always garbage collect dangling references immediately
 - using array-like features: set, get, `isset()`, `unset()` will perform garbage collection at least every 100 operations (less often for large WeakMaps).
+- when GC cycles are collected (automatically or via `gc_collect_cycles()`), garbage collection will trigger immediately
 
 This offers a reasonable trade-off between performance and memory usage.
 
