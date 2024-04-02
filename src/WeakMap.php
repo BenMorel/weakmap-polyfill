@@ -113,7 +113,7 @@ if (\PHP_MAJOR_VERSION === 7) {
         public function offsetGet($object)
         {
             $this->housekeeping();
-            $this->assertValidKey($object);
+            $this->assertValidKey($object, true);
 
             $id = spl_object_id($object);
 
@@ -139,7 +139,7 @@ if (\PHP_MAJOR_VERSION === 7) {
         public function offsetSet($object, $value) : void
         {
             $this->housekeeping();
-            $this->assertValidKey($object);
+            $this->assertValidKey($object, true);
 
             $id = spl_object_id($object);
 
@@ -230,9 +230,9 @@ if (\PHP_MAJOR_VERSION === 7) {
         /**
          * @param mixed $key
          */
-        private function assertValidKey($key) : void
+        private function assertValidKey($key, bool $checkNull = false) : void
         {
-            if ($key === null) {
+            if ($checkNull && $key === null) {
                 throw new Error('Cannot append to WeakMap');
             }
 
