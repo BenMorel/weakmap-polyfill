@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use WeakmapPolyfill\CycleWithDestructor;
 
-if (\PHP_MAJOR_VERSION === 7) {
+if (PHP_MAJOR_VERSION === 7) {
     /**
      * A polyfill for the upcoming WeakMap implementation in PHP 8, based on WeakReference in PHP 7.4.
      * The polyfill aims to be 100% compatible with the native WeakMap implementation, feature-wise.
@@ -45,7 +45,7 @@ if (\PHP_MAJOR_VERSION === 7) {
         private const HOUSEKEEPING_THRESHOLD = 10;
 
         /**
-         * @var array<int, \WeakReference<WeakMap<object, mixed>>>
+         * @var array<int, WeakReference<WeakMap<object, mixed>>>
          */
         private static array $housekeepingInstances = [];
 
@@ -271,7 +271,7 @@ if (\PHP_MAJOR_VERSION === 7) {
                 $setupDestructorFx();
             }
 
-            self::$housekeepingInstances[spl_object_id($this)] = \WeakReference::create($this);
+            self::$housekeepingInstances[spl_object_id($this)] = WeakReference::create($this);
         }
     }
 }
